@@ -1,0 +1,34 @@
+{
+  "name": "minecraft-bot",
+  "version": "1.0.0",
+  "description": "A Mineflayer bot connecting to a Minecraft server on port 61619",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "minecraft",
+    "bot",
+    "mineflayer",
+    "automation",
+    "gaming"
+  ],
+  "author": "bhoyte",
+  "license": "ISC",
+  "dependencies": {
+    "mineflayer": "^4.26.0",
+    "mineflayer-pathfinder": "^2.4.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhoyte/minecraft-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bhoyte/minecraft-bot/issues"
+  },
+  "homepage": "https://github.com/bhoyte/minecraft-bot#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
