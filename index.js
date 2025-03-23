@@ -1,5 +1,6 @@
 const mineflayer = require('mineflayer');
 const { pathfinder } = require('mineflayer-pathfinder');
+const { mineflayer: mineflayerViewer } = require('prismarine-viewer');
 
 // Create the bot
 const bot = mineflayer.createBot({
@@ -31,6 +32,25 @@ bot.on('login', () => {
 bot.on('spawn', () => {
   console.log('Bot spawned in the world');
   console.log(`Position: ${bot.entity.position}`);
+  
+  // Initialize the viewer with first-person perspective
+  mineflayerViewer(bot, { 
+    port: 3000, 
+    firstPerson: true 
+  });
+  console.log('First-person view started! Open http://localhost:3000 in your browser');
+  bot.chat('First-person view is now available at http://localhost:3000');
+  
+  // Track bot's path
+  const path = [bot.entity.position.clone()];
+  bot.on('move', () => {
+    if (path[path.length - 1].distanceTo(bot.entity.position) > 1) {
+      path.push(bot.entity.position.clone());
+      if (bot.viewer) {
+        bot.viewer.drawLine('path', path);
+      }
+    }
+  });
 });
 
 bot.on('chat', (username, message) => {
@@ -104,6 +124,21 @@ bot.on('chat', (username, message) => {
       bot.chat("I can't see you. Please make sure you're in range.");
     }
   }
+
+  // Handle viewer commands
+  if (message.toLowerCase() === 'viewer' || message.toLowerCase() === 'view') {
+    bot.chat(`First-person view is available at http://localhost:3000`);
+  }
+
+  // Toggle path visualization
+  if (message.toLowerCase() === 'toggle path') {
+    if (bot.viewer && bot.viewer._drawPoints.path) {
+      bot.viewer.erase('path');
+      bot.chat('Path visualization disabled');
+    } else {
+      bot.chat('Path visualization will begin with your next movements');
+    }
+  }
 });
 
 // Function to announce bot position in chat
@@ -135,6 +170,15 @@ bot.on('kicked', (reason) => {
 
 bot.on('end', () => {
   console.log('Bot disconnected from the server');
+  // Close the viewer if it's running
+  if (bot.viewer) {
+    try {
+      bot.viewer.close();
+      console.log('Viewer closed');
+    } catch (err) {
+      console.error('Error closing viewer:', err);
+    }
+  }
 });
 
 console.log('Bot is attempting to connect to the Minecraft server...');

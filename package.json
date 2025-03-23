@@ -17,8 +17,11 @@
   "author": "bhoyte",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.11.2",
     "mineflayer": "^4.26.0",
-    "mineflayer-pathfinder": "^2.4.5"
+    "mineflayer-pathfinder": "^2.4.5",
+    "prismarine-viewer": "^1.33.0",
+    "three": "^0.160.0"
   },
   "repository": {
     "type": "git",
