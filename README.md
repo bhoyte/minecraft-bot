@@ -17,7 +17,6 @@ A Minecraft bot created using the Mineflayer library that connects to a Minecraf
 - [Node.js](https://nodejs.org/) (version 14 or higher)
 - A running Minecraft Java Edition server (or LAN world)
 - Modern web browser for viewing the first-person perspective
-- Optional: Conda for environment management
 
 ## Installation
 
@@ -30,11 +29,6 @@ A Minecraft bot created using the Mineflayer library that connects to a Minecraf
 2. Install dependencies:
    ```bash
    npm install
-   ```
-
-3. If using conda for environment management:
-   ```bash
-   conda activate minecraft-bot
    ```
 
 ## Configuration
