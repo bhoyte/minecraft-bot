@@ -1,6 +1,7 @@
 const mineflayer = require('mineflayer');
 const { pathfinder } = require('mineflayer-pathfinder');
 const { mineflayer: mineflayerViewer } = require('prismarine-viewer');
+const { Vec3 } = require('vec3');
 
 // Create the bot
 const bot = mineflayer.createBot({
@@ -100,17 +101,66 @@ bot.on('chat', (username, message) => {
       const y = playerPos.y;
       const z = playerPos.z + Math.cos(yaw) * 3;
       
-      // Teleport command (requires op or command blocks enabled)
-      bot.chat(`/tp @s ${x.toFixed(1)} ${y.toFixed(1)} ${z.toFixed(1)}`);
-      bot.chat("I've teleported in front of you!");
+      // Check if the target position is safe (not inside a solid block)
+      const targetPos = new Vec3(Math.floor(x), Math.floor(y), Math.floor(z));
+      const blockAtTarget = bot.blockAt(targetPos);
+      const blockAboveTarget = bot.blockAt(new Vec3(targetPos.x, targetPos.y + 1, targetPos.z));
       
-      // Make the bot look at the player after teleporting
-      setTimeout(() => {
-        bot.lookAt(player.entity.position.offset(0, 1.6, 0)); // Look at player's head
-      }, 500);
-    } catch (err) {
-      console.error('Error trying to teleport:', err);
-      bot.chat("I couldn't teleport. Make sure commands are enabled!");
+      if (blockAtTarget && blockAtTarget.boundingBox === 'block' || 
+          blockAboveTarget && blockAboveTarget.boundingBox === 'block') {
+        // Position is not safe, try to find a safe position nearby
+        bot.chat("Can't teleport there - it's obstructed. Looking for a safe spot nearby...");
+        
+        // Try several positions around the player in increasing distance
+        const directions = [
+          { dx: -1, dz: 0 }, { dx: 1, dz: 0 }, { dx: 0, dz: -1 }, { dx: 0, dz: 1 },
+          { dx: -1, dz: -1 }, { dx: -1, dz: 1 }, { dx: 1, dz: -1 }, { dx: 1, dz: 1 }
+        ];
+        
+        let safeFound = false;
+        for (let distance = 2; distance <= 5; distance++) {
+          for (const dir of directions) {
+            const testX = playerPos.x + (dir.dx * distance);
+            const testZ = playerPos.z + (dir.dz * distance);
+            
+            // Check if this position is safe
+            const testPos = new Vec3(testX, playerPos.y, testZ);
+            const blockAtTest = bot.blockAt(testPos);
+            const blockAboveTest = bot.blockAt(new Vec3(testPos.x, testPos.y + 1, testPos.z));
+            
+            if ((!blockAtTest || blockAtTest.boundingBox !== 'block') && 
+                (!blockAboveTest || blockAboveTest.boundingBox !== 'block')) {
+              // Found a safe position
+              bot.chat(`/tp @s ${testX.toFixed(1)} ${playerPos.y.toFixed(1)} ${testZ.toFixed(1)}`);
+              bot.chat("I've teleported to a safe position near you!");
+              safeFound = true;
+              
+              // Make the bot look at the player after teleporting
+              setTimeout(() => {
+                bot.lookAt(player.entity.position.offset(0, 1.6, 0)); // Look at player's head
+              }, 500);
+              break;
+            }
+          }
+          if (safeFound) break;
+        }
+        
+        if (!safeFound) {
+          bot.chat("Sorry, I couldn't find a safe position nearby.");
+        }
+      } else {
+        // Original position is safe, teleport there
+        bot.chat(`/tp @s ${x.toFixed(1)} ${y.toFixed(1)} ${z.toFixed(1)}`);
+        bot.chat("I've teleported in front of you!");
+        
+        // Make the bot look at the player after teleporting
+        setTimeout(() => {
+          bot.lookAt(player.entity.position.offset(0, 1.6, 0)); // Look at player's head
+        }, 500);
+      }
+    } catch (error) {
+      bot.chat("Error teleporting: " + error.message);
+      console.error("Teleport error:", error);
     }
   }
   
